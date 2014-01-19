@@ -28,7 +28,7 @@ var search = module.exports = function(args, options) {
 					a.unshift(value);
 					var ret = method.apply(this, a);
 
-					result.add(ret);
+					// result.add(ret);
 					// Array.prototype.splice.apply(result, [0, 0].concat(ret));
 
 				}, this);
@@ -71,7 +71,7 @@ _.assign(search.prototype, {
 			for(var i = 1; i < args.length-1; i++) {
 				compare = removeLastLetter(compare);
 				if(compare === word.slice(0, compare.length)) {
-					result.add(compare);
+					// result.add(compare);
 					if(cb) cb(compare, word);
 				}
 			}
@@ -92,7 +92,7 @@ _.assign(search.prototype, {
 			for(var i = 1; i < args.length-1; i++) {
 				compare = removeFirstLetter(compare);
 				if(compare === word.slice(-compare.length)) {
-					result.add(compare);
+					// result.add(compare);
 					if(cb) cb(compare, word);
 				}
 			}
@@ -129,7 +129,7 @@ _.assign(search.prototype, {
 				for(j = 0; j < forward.length-1; j++) {
 					rx = new RegExp(backward, 'i');
 					if(word.search(rx) !== -1) {
-						result.add(backward);
+						// result.add(backward);
 						if(cb) cb(backward, word);
 					}
 

@@ -9,9 +9,10 @@ describe("collection", function() {
 	});
 
 	it("create should work", function() {
-		var c = new collection("item", "frequency");
+		var c = new collection({item: "", frequency: 1});
 
-		console.log(c.create("er", 3));
+		c.add("er", 3);
+		c.add("er", 3);
 	});
 
 });

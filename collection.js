@@ -15,13 +15,17 @@ var collection = module.exports = function(obj) {
 			this.template[property] = null;
 		}, this);
 	}
-	this.working = [];
+	this.primaryKey = _.keys(this.template)[0];
+	this._items = [];
 };
 
 _.assign(collection.prototype, {
 	create: function(obj) {
+		if(!obj) return new this.template();
+
 		var result = {};
 		var args = Array.prototype.slice.call(arguments);
+
 		if(args.length > 1) {
 			result = _.zipObject(_.keys(this.template), args);
 		}
@@ -33,69 +37,59 @@ _.assign(collection.prototype, {
 	},
 
 	add: function(args, cb) {
-		var item;
-		if(args instanceof collection) {
-			_.forEach(args.working, function(item) {
-				var result = this.get(item.item);
-				if(!result) {
-					this.working.push(item);
-				}
-				else {
-					result.frequency += item.frequency;
-				}
-			}, this);
-		}
-		else if(_.isArray(args)) {
-			_.forEach(args, function(value) {
-				this.add(value);
-			}, this);
+		var args = Array.prototype.slice.call(arguments);
+		if(_.isFunction(args[args.length-1])) {
+			cb = args.pop();
 		}
 		else {
-			// Add
-			if((item = this.get(args)) !== undefined) {
-				item.frequency += 1;
-			}
-			else {
-				args = {item: args, frequency: 1};
-				this.working = _.union(this.working, [args]);
-			}
+			cb = function(accumulator, value, key, object) {
+				accumulator[key] = value;
+			};
 		}
+
+		console.log("cb", cb);
+
+		var obj = this.create.apply(this, args);
+		var item = this.get(obj);
+		
+		if(item !== undefined) {
+			// Update
+			console.log("update", item);
+			_.transform(item, function(accumulator, value, key, object) {
+				var args = Array.prototype.slice.call(arguments);
+				cb.apply(this, args);
+			});
+
+			console.log("result", item);
+		}
+		else {
+			this._items = _.union(this._items, [obj]);
+		}
+
 	},
 
-	get: function(item) {
-		if(!item) return this.working;
-		return _.find(this.working, {item: item});
-	},
+	get: function(args) {
+		if(!args) return this._items;
 
-	including: function(arr) {
-		return _.union(this.working, arr);
-	},
+		var search = {};
+		search[this.primaryKey] = args[this.primaryKey];
+		// console.log("find", search, "in", this._items);
 
-	excluding: function(arr) {
-		return _.difference(this.working, arr);
-	},
-
-	matching: function(rx) {
-		var result = [];
-		_.forEach(this.working, function(value) {
-			if(result.search(rx) !== -1) result.push(value);
-		});
-		this.working = _.pull(this.working, result);
-		return this;
-	},
-
-	significant: function() {
-		var max = _.max(this.working, 'frequency').frequency;
-		var min = _.min(this.working, 'frequency').frequency;
-
-		console.log(max, min);
-
-		_.remove(this.working, function(item) {
-			return !!(item.frequency < (Math.sqrt(max))+min);
-		});
-
-		return this.working;
+		return _.find(this._items, search);
 	}
+
+	// significant: function() {
+	// 	var max = _.max(this._items, 'frequency').frequency;
+	// 	var min = _.min(this._items, 'frequency').frequency;
+
+	// 	console.log(max, min);
+
+	// 	_.remove(this._items, function(item) {
+	// 		return !!(item.frequency < (Math.sqrt(max))+min);
+	// 	});
+
+	// 	return this._items;
+	// }
 });
 
 // Underscore methods that we want to implement on the Collection.
@@ -110,7 +104,7 @@ var methods = ['forEach', 'each', 'map', 'collect', 'reduce', 'foldl',
 _.forEach(methods, function(method) {
 	collection.prototype[method] = function() {
 		var args = slice.call(arguments);
-		args.unshift(this.working);
+		args.unshift(this._items);
 		return _[method].apply(_, args);
 	};
 });
