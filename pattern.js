@@ -4,7 +4,7 @@ var word = require("./word.js");
 var pattern = module.exports = function pattern(rx) {
 	if(!(this instanceof pattern)) return new pattern(rx);
 	
-	if(!(rx instanceof RegExp)) rx = new RegExp(rx, i);
+	if(!(rx instanceof RegExp)) rx = new RegExp(rx, 'i');
 	this.rx = rx;
 
 	this.hash = this.hash(this.rx.toString());

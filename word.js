@@ -27,7 +27,6 @@ _.assign(word.prototype, {
 	 * Adjective
 	 * Conjunction
 	 **/
-	root: "",
 
 	related: [],
 	collocations: [],

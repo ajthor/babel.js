@@ -4,6 +4,7 @@ var search = require("./search.js");
 var dict = require("./dict.js");
 var word = require("./word.js");
 var pattern = require("./pattern.js");
+var collection = require("./collection.js");
 
 var interpreter = module.exports = function(args) {
 
@@ -32,16 +33,18 @@ var interpreter = module.exports = function(args) {
 		return result;
 	})(args);
 
-	console.log(sentences);
+	// console.log(sentences);
 
 	// For each word, find suffixes/prefixes/clusters that match
 	// other words and are prevalent.
 
 	this.search = new search(words);
 
-	var prefixes = this.search.for.all.prefixes();
-	var suffixes = this.search.for.all.suffixes();
-	var clusters = this.search.for.all.clusters();
+	console.log("prefixes", this.search.for.all.prefixes().significant());
+	console.log("suffixes", this.search.for.all.suffixes().significant());
+	// this.search.for.significant.clusters("Lorem", function(x) {console.log(x);});
+
+
 
 };
 
