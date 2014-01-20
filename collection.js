@@ -21,49 +21,55 @@ var collection = module.exports = function(obj) {
 
 _.assign(collection.prototype, {
 	create: function(obj) {
-		if(!obj) return new this.template();
 
 		var result = {};
 		var args = Array.prototype.slice.call(arguments);
-
-		if(args.length > 1) {
-			result = _.zipObject(_.keys(this.template), args);
+		try {
+			if(!obj) return new this.template(args);
+		} catch (e) {
+			console.log("Not an object.", "Error:", e);
 		}
-		else {
-			obj || (obj = {});
+
+		if(_.isObject(obj)) {
 			result = _.defaults(obj, this.template);
 		}
+		else {
+			result = _.zipObject(_.keys(this.template), args);
+			result = _.defaults(result, this.template);
+		}
 		return result;
+		
 	},
 
 	add: function(args, cb) {
-		var args = Array.prototype.slice.call(arguments);
-		if(_.isFunction(args[args.length-1])) {
-			cb = args.pop();
+		if(args instanceof collection) {
+			_.forEach(args._items, function(item) {
+				this.add(item, cb);
+			}, this);
 		}
 		else {
-			cb = function(accumulator, value, key, object) {
-				accumulator[key] = value;
-			};
-		}
+			var args = Array.prototype.slice.call(arguments);
+			if(_.isFunction(args[args.length-1])) {
+				cb = args.pop();
+			}
+			else {
+				cb = function(obj, value, key) {
+					obj[key] = value;
+				};
+			}
 
-		console.log("cb", cb);
-
-		var obj = this.create.apply(this, args);
-		var item = this.get(obj);
-		
-		if(item !== undefined) {
-			// Update
-			console.log("update", item);
-			_.transform(item, function(accumulator, value, key, object) {
-				var args = Array.prototype.slice.call(arguments);
-				cb.apply(this, args);
-			});
-
-			console.log("result", item);
-		}
-		else {
-			this._items = _.union(this._items, [obj]);
+			var obj = this.create.apply(this, args);
+			var item = this.get(obj);
+			
+			if(item !== undefined) {
+				// Update
+				_.forEach(item, function(value, key) {
+					cb(item, obj[key], key);
+				});
+			}
+			else {
+				this._items = _.union(this._items, [obj]);
+			}
 		}
 
 	},
@@ -73,40 +79,21 @@ _.assign(collection.prototype, {
 
 		var search = {};
 		search[this.primaryKey] = args[this.primaryKey];
-		// console.log("find", search, "in", this._items);
 
 		return _.find(this._items, search);
+	},
+
+	hash: function(str) {
+		if(!str) str = this.word+this.id+this.category;
+		var hash = 0, i, ch;
+		for (i = 0, l = str.length; i < l; i++) {
+		    ch  = str.charCodeAt(i);
+		    hash  = ((hash<<5)-hash)+ch;
+		    hash |= 0; // Convert to 32bit integer
+		}
+		return hash;
 	}
 
-	// significant: function() {
-	// 	var max = _.max(this._items, 'frequency').frequency;
-	// 	var min = _.min(this._items, 'frequency').frequency;
-
-	// 	console.log(max, min);
-
-	// 	_.remove(this._items, function(item) {
-	// 		return !!(item.frequency < (Math.sqrt(max))+min);
-	// 	});
-
-	// 	return this._items;
-	// }
-});
-
-// Underscore methods that we want to implement on the Collection.
-var methods = ['forEach', 'each', 'map', 'collect', 'reduce', 'foldl',
-	'inject', 'reduceRight', 'foldr', 'find', 'detect', 'filter', 'select',
-	'reject', 'every', 'all', 'some', 'any', 'include', 'contains', 'invoke',
-	'max', 'min', 'toArray', 'size', 'first', 'head', 'take', 'initial', 'rest',
-	'tail', 'drop', 'last', 'without', 'indexOf', 'shuffle', 'lastIndexOf',
-	'isEmpty', 'chain'];
-
-// Mix in each Underscore method as a proxy to `Collection#models`.
-_.forEach(methods, function(method) {
-	collection.prototype[method] = function() {
-		var args = slice.call(arguments);
-		args.unshift(this._items);
-		return _[method].apply(_, args);
-	};
 });
 
 

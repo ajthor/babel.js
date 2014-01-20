@@ -10,6 +10,7 @@ var search = module.exports = function(args, options) {
 	options || (options = {});
 
 	if(!Array.isArray(args)) args = [args];
+	this.raw = args;
 	this.working = args;
 
 	_.forIn(this, function(method, key) {
@@ -19,8 +20,13 @@ var search = module.exports = function(args, options) {
 			// all
 			//
 			this.all[key] = function(cb) {
+				// Collapse words into unique array.
+				this.working = this.working.concat.apply([], this.working);
+				this.working = this.working.filter(function(elem, pos) {
+					return this.working.indexOf(elem) == pos;
+				}.bind(this));
 				// Function that wraps other functions.
-				var result = new collection();
+				var result = new collection({item: null, frequency: 1});
 				var args = arguments;
 
 				_.forEach(this.working, function(value) {
@@ -28,7 +34,10 @@ var search = module.exports = function(args, options) {
 					a.unshift(value);
 					var ret = method.apply(this, a);
 
-					// result.add(ret);
+					result.add(ret, function(obj, value, key) {
+						if(key !== "frequency") return;
+						else obj[key] += value;
+					});
 					// Array.prototype.splice.apply(result, [0, 0].concat(ret));
 
 				}, this);
@@ -46,32 +55,34 @@ var search = module.exports = function(args, options) {
 
 _.assign(search.prototype, {
 
+	raw: [],
+
 	all: {},
 
-	// matches: function(args, cb) {
-	// 	var p = new pattern(args);
-	// 	var result = [];
+	pairings: function(args, cb) {
+		var result = new collection({item: null, frequency: 1, distance: 1});
 
-	// 	p.exec(this.working, function(match) {
-	// 		result.push(match[0]);
-	// 		if(cb) cb(match);
-	// 	});
-
-	// 	return result;
-	// },
+		return result;
+	},
 
 	prefixes: function(args, cb) {
-		var result = new collection();
+		var result = new collection({item: null, frequency: 1});
 		var remaining = _.difference(this.working, [args]);
 
 		_.forEach(remaining, function(word) {
-			if(args === word) return;
+			if(args.toLowerCase() === word.toLowerCase()) return;
 			var compare = args;
 
 			for(var i = 1; i < args.length-1; i++) {
 				compare = removeLastLetter(compare);
+
 				if(compare === word.slice(0, compare.length)) {
-					// result.add(compare);
+
+					result.add(compare, function(obj, value, key) {
+						if(key !== "frequency") return;
+						else obj[key] += value;
+					});
+					
 					if(cb) cb(compare, word);
 				}
 			}
@@ -82,7 +93,7 @@ _.assign(search.prototype, {
 	},
 
 	suffixes: function(args, cb) {
-		var result = new collection();
+		var result = new collection({item: null, frequency: 1});
 		var remaining = _.difference(this.working, [args]);
 
 		_.forEach(remaining, function(word) {
@@ -91,8 +102,14 @@ _.assign(search.prototype, {
 
 			for(var i = 1; i < args.length-1; i++) {
 				compare = removeFirstLetter(compare);
+
 				if(compare === word.slice(-compare.length)) {
-					// result.add(compare);
+					
+					result.add(compare, function(obj, value, key) {
+						if(key !== "frequency") return;
+						else obj[key] += value;
+					});
+
 					if(cb) cb(compare, word);
 				}
 			}
@@ -116,7 +133,8 @@ _.assign(search.prototype, {
 		 * Then, it removes the first letter and repeats. This gives
 		 * every possible letter combination a try.
 		 */
-		var result = new collection();
+		 
+		var result = new collection({item: null, frequency: 1});
 		var remaining = _.difference(this.working, [args]);
 
 		_.forEach(remaining, function(word) {
@@ -129,7 +147,12 @@ _.assign(search.prototype, {
 				for(j = 0; j < forward.length-1; j++) {
 					rx = new RegExp(backward, 'i');
 					if(word.search(rx) !== -1) {
-						// result.add(backward);
+						
+						result.add(backward, function(obj, value, key) {
+							if(key !== "frequency") return;
+							else obj[key] += value;
+						});
+
 						if(cb) cb(backward, word);
 					}
 

@@ -6,7 +6,7 @@ var word = require("./word.js");
 var pattern = require("./pattern.js");
 var collection = require("./collection.js");
 
-var interpreter = module.exports = function(args) {
+var interpret = module.exports = function(args) {
 
 	var sentences = (function(args) {
 		return args.split(/\.\s/);
@@ -24,26 +24,35 @@ var interpreter = module.exports = function(args) {
 			}
 		});
 
-		// Collapse words into unique array.
-		result = result.concat.apply([], result);
-		result = result.filter(function(elem, pos) {
-			return result.indexOf(elem) == pos;
-		});
-
 		return result;
 	})(args);
 
-	// console.log(sentences);
+	console.log(sentences);
 
 	// For each word, find suffixes/prefixes/clusters that match
 	// other words and are prevalent.
 
 	this.search = new search(words);
 
-	console.log("prefixes", this.search.for.all.prefixes().significant());
-	console.log("suffixes", this.search.for.all.suffixes().significant());
-	// this.search.for.significant.clusters("Lorem", function(x) {console.log(x);});
+	var suffixes = this.search.for.all.suffixes();
+	var significant = function(c) {
+		var max = _.max(c._items, 'frequency').frequency;
+		var min = _.min(c._items, 'frequency').frequency;
 
+		console.log(max, min, (Math.log(max))*9);
+
+		_.remove(c._items, function(item) {
+			return !!(item.frequency < (Math.log(max))*9);
+		});
+
+		return c._items;
+	};
+	suffixes = significant(suffixes);
+	console.log(suffixes);
+
+	_.forEach(words, function(word) {
+		// Do stuff. 
+	});
 
 
 };
