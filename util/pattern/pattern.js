@@ -1,28 +1,18 @@
 var _ = require("lodash");
-var word = require("./word/word.js");
+var model = require("../model/model.js");
+var word = require("../word/word.js");
 
-var pattern = module.exports = function pattern(rx) {
-	if(!(this instanceof pattern)) return new pattern(rx);
-	
+var pattern = module.exports = function Pattern(rx) {
+	var args = Array.prototype.slice.apply(arguments);
 	if(!(rx instanceof RegExp)) rx = new RegExp(rx, 'i');
-	this.rx = rx;
-
-	this.hash = this.hash(this.rx.toString());
-	
+	this.set("rx", rx);
+	this.id = _.uniqueId("p");
+	this.primaryKey = "id";
+	return model.apply(this, args);
 };
+pattern.prototype = model.prototype;
 
 _.assign(pattern.prototype, {
-
-	hash: function(str) {
-		if(!str) str = this.word+this.id+this.category;
-		var hash = 0, i, ch;
-		for (i = 0, l = str.length; i < l; i++) {
-		    ch  = str.charCodeAt(i);
-		    hash  = ((hash<<5)-hash)+ch;
-		    hash |= 0; // Convert to 32bit integer
-		}
-		return hash;
-	},
 
 	exec: function(arr, cb) {
 		// Get arguments.
@@ -30,6 +20,7 @@ _.assign(pattern.prototype, {
 		if(_.isFunction(args[args.length-1])) cb = args.pop();
 
 		var result = [];
+		var rx = this.get("rx");
 		// Convert array to array if not already an array.
 		if(args.length > 1) arr = args;
 		else if(!Array.isArray(arr)) arr = [arr];
@@ -37,10 +28,10 @@ _.assign(pattern.prototype, {
 		// Cycle through array.
 		arr.forEach(function(item) {
 			var match, search;
-			if(item instanceof word) search = item.toString();
+			if(item instanceof word) search = item.get("word");
 			else search = item;
 			// And find the words that match.
-			if((match = this.rx.exec(search)) !== null) {
+			if((match = rx.exec(search)) !== null) {
 				// If you pass a complex regexp, it may be better
 				// to capture all results in a callback.
 				if(cb && _.isFunction(cb)) cb(match);
@@ -50,9 +41,7 @@ _.assign(pattern.prototype, {
 		}, this);
 
 		return result;
-	},
-
-	toString: function() {return this.rx.toString();}
+	}
 
 });
 
