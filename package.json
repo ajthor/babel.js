@@ -13,5 +13,18 @@
   "license": "MIT",
   "dependencies": {
     "lodash": "~2.4.1"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajthor/Language-Parser.git"
+  },
+  "keywords": [
+    "language",
+    "parser"
+  ],
+  "bugs": {
+    "url": "https://github.com/ajthor/Language-Parser/issues"
+  },
+  "homepage": "https://github.com/ajthor/Language-Parser"
 }

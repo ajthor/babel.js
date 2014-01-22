@@ -1,4 +1,4 @@
-var word = require("../word.js");
+var word = require("../word/word.js");
 
 describe("pattern", function() {
 

@@ -1,10 +1,10 @@
-var _ = require("underscore");
+var _ = require("lodash");
 
 var collection = module.exports = function(template, objects, options) {
 	options || (options = {});
 	if(!_.isObject(template)) template = {};
-	this._byId = {};
-	this.objects = [];
+	this._template = template;
+
 	if(objects) this.add(objects, options);
 };
 
@@ -60,15 +60,25 @@ _.extend(collection.prototype, {
 	},
 
 	// CRUD functions (including add, minus delete).
-	add: function(args) {
+	add: function(args, options) {
 		// Add to both collections.
-		this.set(args, {add: true, update: true, remove: false});
+		options || (options = {});
+		this.set(args, _.extend({add: true}, options, {update: true, remove: false}));
 		return this;
 	},
-	remove: function(args) {
+	remove: function(args, options) {
 		// Remove from both collections.
-		this.set(args, {add: false, update: false, remove: true});
-		return this;
+		options || (options = {});
+		var obj;
+		if(!Array.isArray(args)) args = [args];
+		args.forEach(function(item, key) {
+			obj = this.get(item);
+			if(!obj) return;
+			delete this._byId[obj.id];
+			index = _.indexOf(this.objects, item);
+			this.objects.splice(index, 1);
+		}, this);
+		return args;
 	},
 
 	merge: function(args) {
@@ -77,16 +87,17 @@ _.extend(collection.prototype, {
 
 	get: function(args) {
 		if(args == null) return void 0;
-		return this._byId[args.id] || this._byId[args];
+		if(_.isObject(args)) return _.find(this.objects, args);
+		return this._byId[args.id] || this._byId[args.primaryKey] || this._byId[args];
 	},
 	set: function(args, options) {
 		if(args instanceof collection) {
-			this.merge(collection);
-			return this;
+			// this.merge(collection);
+			// return this;
+			args = args.objects;
 		}
 		options || (options = {});
 		var toAdd = [];
-		var toRemove = [];
 		// Add by id.
 		// Add to sorted array.
 		if(!Array.isArray(args)) args = [args];
@@ -99,11 +110,8 @@ _.extend(collection.prototype, {
 				// Exists. Update.
 				if(options.update) {
 					exists = item;
-					obj = _.find(this.objects, {id: id});
+					obj = this.find({id: id});
 					obj = item;
-				}
-				else if(options.remove) {
-					toRemove.push(exists);
 				}
 				
 			}
@@ -125,19 +133,16 @@ _.extend(collection.prototype, {
 
 			}, this);
 		}
-
-		if(toRemove.length > 0) {
-			_.forEach(toAdd, function(item) {
-				// Remove
-
-			}, this);
-		}
 		return this;
 	},
 
 	clone: function() {
-      return new this.constructor(this.models);
+		return new this.constructor(this.objects);
     },
+
+	slice: function() {
+		return slice.apply(this.objects, arguments);
+	},
 
 	// Return object when passed an id.
 	at: function(index) {
@@ -155,6 +160,16 @@ _.extend(collection.prototype, {
 		return hash;
 	}
 
+});
+
+var methods = ['find', 'indexOf', 'forEach'];
+
+_.each(methods, function(method) {
+	collection.prototype[method] = function() {
+		var args = Array.prototype.slice.call(arguments);
+		args.unshift(this.objects);
+		return _[method].apply(_, args);
+	};
 });
 
 

@@ -1,5 +1,5 @@
 var _ = require("lodash");
-var word = require("./word.js");
+var word = require("./word/word.js");
 
 var pattern = module.exports = function pattern(rx) {
 	if(!(this instanceof pattern)) return new pattern(rx);

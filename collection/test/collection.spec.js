@@ -1,3 +1,5 @@
+var _ = require("lodash");
+
 describe("collection", function() {
 
 	var collection;
@@ -43,7 +45,13 @@ describe("collection", function() {
 			instance.create("there");
 			instance.create("world");
 
-			console.log(instance.objects);
+			// console.log(instance.objects);
+
+			instance.remove({word: "there"});
+
+			// console.log(_.find(instance.objects, {word: "there"}));
+
+			// console.log(instance.objects);
 
 		});
 	});
