@@ -4,8 +4,10 @@ var word = require("../word/word.js");
 
 var pattern = module.exports = function Pattern(rx) {
 	var args = Array.prototype.slice.apply(arguments);
+
 	if(!(rx instanceof RegExp)) rx = new RegExp(rx, 'i');
 	this.set("rx", rx);
+	
 	this.id = _.uniqueId("p");
 	this.primaryKey = "id";
 	return model.apply(this, args);

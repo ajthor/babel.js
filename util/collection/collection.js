@@ -35,7 +35,7 @@ _.extend(collection.prototype, {
 		if(args instanceof this._template) {
 			if(!args.collection) args.collection = this;
 			if(!args.id) args.id = _.uniqueId();
-			if(!args.hash) args.hash = this.hash();
+			if(!args.hash) args.hash = this.hash(args.id);
 			return args;
 		}
 		// Not the same as template.
@@ -162,7 +162,7 @@ _.extend(collection.prototype, {
 
 });
 
-var methods = ['find', 'indexOf', 'forEach'];
+var methods = ['find', 'indexOf', 'forEach', 'filter'];
 
 _.each(methods, function(method) {
 	collection.prototype[method] = function() {

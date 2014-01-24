@@ -15,11 +15,11 @@ describe("pattern", function() {
 		var test = new pattern(/(?:\bhave\W+)(?:\W+|\w+){1,6}(\b\w+ing)/);
 
 		test.exec("you have always been doing", "fierce", "balloon", "are ballooning", function(match) {
-			console.log(match);
+			// console.log(match);
 		});
 
-		console.log(test);
-		console.log(test.attributes);
+		// console.log(test);
+		// console.log(test.attributes);
 
 	});
 

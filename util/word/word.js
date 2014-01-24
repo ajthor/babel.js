@@ -11,16 +11,7 @@ var word = module.exports = function Word(word) {
 word.prototype = model.prototype;
 
 _.assign(word.prototype, {
-
-	iterator: function(word) {},
-	iterate: function(cb) {
-		var word = this.get("word");
-		for(var i = 0, len = word.length; i < len; i++) {
-			cb(word);
-			word = iterator(word);
-		}
-	}
-
+	
 });
 
 

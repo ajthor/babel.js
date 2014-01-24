@@ -32,26 +32,36 @@ describe("collection", function() {
 		expect(instance._factory).toBeDefined();
 	});
 
+	// describe("factory function", function() {
+	// 	it("should return an object", function() {
+	// 		var instance = new collection();
+
+	// 		var word = function(word) {
+	// 			this.word = word;
+	// 		};
+
+	// 		instance._template = word;
+	// 		instance.create("Hello");
+	// 		instance.create("there");
+	// 		instance.create("world");
+
+	// 		// console.log(instance.objects);
+
+	// 		instance.remove({word: "there"});
+
+	// 		// console.log(_.find(instance.objects, {word: "there"}));
+
+	// 		// console.log(instance.objects);
+
+	// 	});
+	// });
+
 	describe("factory function", function() {
 		it("should return an object", function() {
-			var instance = new collection();
+			var instance = new collection(String);
 
-			var word = function(word) {
-				this.word = word;
-			};
-
-			instance._template = word;
-			instance.create("Hello");
-			instance.create("there");
-			instance.create("world");
-
-			// console.log(instance.objects);
-
-			instance.remove({word: "there"});
-
-			// console.log(_.find(instance.objects, {word: "there"}));
-
-			// console.log(instance.objects);
+			instance.create(new String("hello"));
+			console.log(instance.objects[0]);
 
 		});
 	});
