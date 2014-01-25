@@ -20,6 +20,10 @@ _.extend(lexis.prototype, {
 		this.working = this._raw;
 	},
 
+	contains: function(item) {
+		return !!(this.working.indexOf(item) !== -1);
+	},
+
 	toCollection: function() {
 		var result = new collection(String);
 		this.working.forEach(function(item) {

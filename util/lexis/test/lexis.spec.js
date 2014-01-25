@@ -21,7 +21,7 @@ describe("lexis", function() {
 	});
 
 	it("instantiation should work", function() {
-		var text = "Hello there!!   My name is R2D2... \"What is your name?\" \"Googledy C3PO!\"";
+		// var text = "Hello there!!   My name is R2D2... \"What is your name?\" \"Googledy C3PO!\"";
 
 		// var instance = new lexis(lipsum);
 
@@ -29,7 +29,9 @@ describe("lexis", function() {
 		// 	console.log(item);
 		// });
 
-		lexis(text).suffixes().significant();
+		var c = lexis(lipsum).suffixes().significant();
+
+		expect(c.contains('um')).not.toBe(false);
 
 	});
 

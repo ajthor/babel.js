@@ -14,40 +14,6 @@ pattern = exports.pattern = function(rx, cb) {
 	return this._make(result);
 };
 
-significant = exports.significant = function(cb) {
-	var result = [];
-	var matches = [];
-	var search = this.working.slice(0);
-	var remove;
-
-	var total = this.working.length;
-
-	this.working.forEach(function(item) {
-		remove = _.remove(search, function(thing) {
-			return !!(thing == item);
-		});
-		if(remove.length > 1) {
-			matches.push(remove);
-			result.push(item);
-		}
-
-
-	}, this);
-
-	// var avg = total/matches.length;
-
-	console.log(total);
-
-	// result = _.remove(result, function(item) {
-	// 	return item.length > avg;
-	// });
-
-	console.log(result);
-	console.log(matches);
-
-	return this._make(result);
-};
-
 sentences = exports.sentences = function(cb) {
 	var rx = /[\S][^\.!\?]+[\.!\?\"]+/g;
 	return this.pattern(rx, cb);
@@ -100,6 +66,56 @@ unique = exports.unique = function(cb) {
 	result.forEach(function(item) {
 		if(cb) cb(item);
 	});
+	return this._make(result);
+};
+
+significant = exports.significant = function(cb, modifier, len) {
+	if(!modifier) modifier = 2;
+	if(!len) len = 1;
+	var result = [];
+	var matches = [];
+	var search = this.working.slice(0);
+	var remove;
+
+	this.working.forEach(function(item) {
+		remove = _.remove(search, function(term) {
+			return !!(term == item);
+		});
+		if(remove.length > 0) {
+			result.push(remove);
+		}
+	}, this);
+
+	// Calculate standard deviation.
+	var deviation = (function() {
+		var total = result.length;
+		var sum = 0;
+		result.forEach(function(item) {
+			sum += item.length;
+		});
+		var mean = sum/total;
+		var difference2 = [];
+		sum = 0;
+		for(var i = 0; i < result.length; i++) {
+			difference2[i] = Math.pow(result[i].length-mean,2);
+			sum += difference2[i];
+		}
+		return Math.sqrt(sum/total);
+	})();
+	// Remove results less than modifier (default: 2) 
+	// deviations above the avg.
+	result = _.remove(result, function(item) {
+		return !!(item.length > deviation*modifier);
+	});
+	// Get just single items.
+	result = _.uniq(_.flatten(result));
+	// And remove items not greater than len (default: 1)
+	result = _.remove(result, function(item) {
+		return !!(item.length >= len);
+	});
+
+	console.log(result);
+
 	return this._make(result);
 };
 
