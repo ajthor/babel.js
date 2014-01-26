@@ -107,6 +107,8 @@ significant = exports.significant = function(cb, modifier, len) {
 	result = _.remove(result, function(item) {
 		return !!(item.length > deviation*modifier);
 	});
+
+	// console.log(result);
 	// Get just single items.
 	result = _.uniq(_.flatten(result));
 	// And remove items not greater than len (default: 1)

@@ -1,15 +1,20 @@
 var _ = require("lodash");
+var extend = require("../extend.js");
 
 var model = module.exports = function(attributes) {
 	if(!this.id) this.id = _.uniqueId("m");
 	if(!this.primaryKey) this.primaryKey = this.id;
+	this.attributes = {};
+	this.initialize.apply(this, arguments);
 };
+
+model.extend = extend;
 
 _.extend(model.prototype, {
 
 	primaryKey: null,
 
-	attributes: {},
+	initialize: function(){},
 
 	get: function(args) {
 		return this.attributes[args];
@@ -31,6 +36,7 @@ _.extend(model.prototype, {
 	id: null,
 	hash: null,
 	collection: null
+	
 });
 
 var methods = ['keys', 'values'];

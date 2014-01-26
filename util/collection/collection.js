@@ -1,21 +1,24 @@
 var _ = require("lodash");
+var extend = require("../extend.js");
 
 var collection = module.exports = function(template, objects, options) {
 	options || (options = {});
 	if(!_.isObject(template)) template = {};
 	this._template = template;
+	this._byId = {};
+	this.objects = [];
 
 	if(objects) this.add(objects, options);
+	this.initialize.apply(this, arguments);
 };
+
+collection.extend = extend;
 
 // collection.__proto__ = require("./static.js");
 
 _.extend(collection.prototype, {
-	// Sorted array of items.
-	_byId: {},
-	// Copy of _items with hash keys for quick searches.
-	objects: [],
 
+	initialize: function(){},
 	// The template object to be used to create new item
 	// instances which are kept in this collection.
 	_template: {},
@@ -94,7 +97,7 @@ _.extend(collection.prototype, {
 		if(args instanceof collection) {
 			// this.merge(collection);
 			// return this;
-			args = args.objects;
+			// args = args.objects;
 		}
 		options || (options = {});
 		var toAdd = [];
@@ -126,7 +129,7 @@ _.extend(collection.prototype, {
 		}, this);
 
 		if(toAdd.length > 0) {
-			_.forEach(toAdd, function(item) {
+			toAdd.forEach(function(item) {
 				// Sort
 				this.objects.push(item);
 				this._byId[item.id] = item;
