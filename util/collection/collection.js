@@ -48,7 +48,7 @@ _.extend(collection.prototype, {
 		instance.collection = this;
 		if(!instance.id) instance.id = _.uniqueId();
 		if(instance.primaryKey) {
-			instance.hash = this.hash(instance.id + instance[instance.primaryKey]);
+			instance.hash = this.hash(instance.get(instance.primaryKey));// || this.hash(instance[instnace.primaryKey]);
 		}
 		else instance.hash = this.hash(instance.id);
 
@@ -100,6 +100,7 @@ _.extend(collection.prototype, {
 			// args = args.objects;
 		}
 		options || (options = {});
+		var index;
 		var toAdd = [];
 		// Add by id.
 		// Add to sorted array.
@@ -131,9 +132,11 @@ _.extend(collection.prototype, {
 		if(toAdd.length > 0) {
 			toAdd.forEach(function(item) {
 				// Sort
-				this.objects.push(item);
+				index = _.sortedIndex(this.objects, item, function(item) {
+					return item.get("word").toLowerCase();
+				});
+				this.objects.splice(index ,0 , item);
 				this._byId[item.id] = item;
-
 			}, this);
 		}
 		return this;

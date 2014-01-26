@@ -5,7 +5,7 @@ var word = module.exports = model.extend({
 	initialize: function(word) {
 		this.set("word", word);
 		this.id = _.uniqueId("w");
-		this.primaryKey = "id";
+		this.primaryKey = "word";
 	}
 });
 
