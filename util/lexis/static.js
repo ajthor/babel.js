@@ -69,6 +69,28 @@ unique = exports.unique = function(cb) {
 	return this._make(result);
 };
 
+shared = exports.shared = function(cb) {
+	var result = [];
+	var words = this.previous._raw;
+	// Search all items.
+	this.unique().working.forEach(function(item) {
+		var match = true;
+		// Find items that are in every previous array.
+		words.forEach(function(word) {
+			if(word.toLowerCase().search(item) == -1) {
+				match = false;
+				return false;
+			}
+		});
+		if(match) {
+			if(cb) cb(item);
+			result.push(item);
+		}
+	});
+
+	return this._make(result);
+};
+
 significant = exports.significant = function(cb, modifier, len) {
 	if(!modifier) modifier = 2;
 	if(!len) len = 1;
@@ -116,7 +138,10 @@ significant = exports.significant = function(cb, modifier, len) {
 		return !!(item.length >= len);
 	});
 
-	console.log(result);
+	// console.log(result);
+	result.forEach(function(item) {
+		if(cb) cb(item);
+	});
 
 	return this._make(result);
 };

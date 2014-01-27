@@ -2,15 +2,17 @@ var _ = require("lodash");
 var lev = require("../levenshtein.js");
 var word = require("../word/word.js");
 var collection = require("../collection/collection.js");
+var lexis = require("../lexis/lexis.js");
 
 var dict = module.exports = collection.extend({
 	initialize: function() {
 		this._template = word;
 	},
 
-	lookup: function(word) {
+	lookup: function(args) {
+		if(!(args instanceof word)) args = new word(args);
 		return _.find(this.objects, function(item) {
-			return item.get("word") === word;
+			return item.get("word").toLowerCase() === args.get("word").toLowerCase();
 		});
 	},
 
@@ -31,7 +33,7 @@ var dict = module.exports = collection.extend({
 		}
 		if(next) {
 			ndist = lev(args.get("word"), next.get("word"));
-			if((ndist < pdist) && (ndist < 3)) result = next;
+			if((ndist < pdist) && (ndist < 4)) result = next;
 		}
 
 		if(result) console.log("Found a fuzzy match:", result.get("word"));
@@ -40,5 +42,12 @@ var dict = module.exports = collection.extend({
 	}
 
 });
+
+
+
+
+
+
+
 
 

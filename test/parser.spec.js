@@ -12,7 +12,7 @@ describe("parser", function() {
 
 	it("should run main function without throwing", function() {
 		expect(function() {
-			var instance = new parser(shortLorem);
+			var instance = new parser("Hello there, cruel world! crueler cruelest worldly. Morbid mort mortgage. Nice nicer nicest.");
 		}).not.toThrow();
 	});
 
