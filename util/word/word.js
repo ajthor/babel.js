@@ -13,21 +13,24 @@ var word = module.exports = model.extend({
 		if(!(args instanceof word)) args = new word(args);
 		var result;
 		var root;
-		var related = false;
+		var related = true;
 		var aggregate  = [];
 
-		aggregate = _.union([this], [args], (args.get("related") || []));
-		root = this.findSharedRoot(aggregate);
+		aggregate = _.union([args], (args.get("related") || []));
+
+		root = this.findRoot(aggregate);
 		aggregate.forEach(function(item) {
 			// Compare.
-			item.set("root", root);
+			if(related) item.set("root", root);
 			// Find usage. If usage is the same, same category.
 
 		}, this);
 
 		// If this word or its forms are close, 
 		// then let's make them related.
-		if(related) this.relateTo(args);
+		if(related) {
+			this.relateTo(args);
+		}
 		return result;
 	},
 
@@ -39,7 +42,7 @@ var word = module.exports = model.extend({
 		}, this);
 	},
 
-	findSharedRoot: function(args) {
+	findRoot: function(args) {
 		var root = "";
 		var words = [this.get("word")];
 
@@ -57,36 +60,8 @@ var word = module.exports = model.extend({
 
 		console.log("root", root);
 		return root;
-	},
-
-	sharedRoot: function(args) {
-		var match, possible = [];
-
-		if((this.get("word").search(args.get("word"))) !== -1) {
-			// Found a root.
-			console.log("Found a root!");
-			this.addRelation(args);
-			return;
-		}
-
-		var suffixes = lexis([args.get("word")]).suffixes();
-		
-		suffixes.significant(function(item) {
-			var match = args.get("word").toLowerCase().slice(0, args.get("word").length-item.length);
-			if(this.get("word").search(match) !== -1) {
-				possible.push(match);
-				console.log("possible match", this.get("word"), args.get("word"), match, args.get("word").length-item.length);
-			}
-
-		}.bind(this));
-
-		console.log("possible roots", possible, args.get("word"));
-
-		if(this.get("related") !== undefined) {
-
-		}
-		
 	}
+
 });
 
 
