@@ -4,7 +4,7 @@ var lexis = require("../lexis/lexis.js");
 
 var word = module.exports = model.extend({
 	initialize: function(word) {
-		this.set("word", word);
+		this.set("word", word.toLowerCase());
 		this.id = _.uniqueId("w");
 		this.primaryKey = "word";
 	},
@@ -13,15 +13,16 @@ var word = module.exports = model.extend({
 		if(!(args instanceof word)) args = new word(args);
 		var result;
 		var root;
-		var related = true;
+		var related = false;
 		var aggregate  = [];
 
 		aggregate = _.union([args], (args.get("related") || []));
 
 		root = this.findRoot(aggregate);
+		console.log("root", root);
 		aggregate.forEach(function(item) {
 			// Compare.
-			if(related) item.set("root", root);
+			if(root) item.set("root", root);
 			// Find usage. If usage is the same, same category.
 
 		}, this);
@@ -58,7 +59,11 @@ var word = module.exports = model.extend({
 			}
 		});
 
-		console.log("root", root);
+		// Should be a significant length.
+		if(!(root.length > 3)) {
+			return null;
+		}
+
 		return root;
 	}
 

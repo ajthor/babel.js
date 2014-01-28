@@ -77,7 +77,7 @@ shared = exports.shared = function(cb) {
 		var match = true;
 		// Find items that are in every previous array.
 		words.forEach(function(word) {
-			if(word.toLowerCase().search(item) == -1) {
+			if(word.toLowerCase().search(item.toLowerCase()) == -1) {
 				match = false;
 				return false;
 			}

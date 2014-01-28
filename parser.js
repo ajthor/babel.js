@@ -22,10 +22,11 @@ var parser = module.exports = function parser(text) {
 			console.log("Unknown word: >>", item, "<< found. Analyzing...");
 			item = new word(item);
 			// Analyze
-			match = known.fuzzyMatch(item);
-			
+			match = known.closestMatch(item);
 			if(match) item.compare(match);
+
 			// Add to list of known words.
+			// console.log(known.objects);
 			known.add(item);
 		}
 		else {
