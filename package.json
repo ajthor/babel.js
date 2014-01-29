@@ -8,8 +8,10 @@
   },
   "dependencies": {
     "lodash": "~2.4.1",
-    "underscore": "~1.5.2",
-    "when": "~2.7.1"
+    "when": "~2.7.1",
+    "backbone-node": "git://github.com/ajthor/backbone-node.git/",
+    "parsejs": "git://github.com/ajthor/parse.js.git",
+    "levenshtein": "git://github.com/ajthor/levenshtein.git"
   },
   "devDependencies": {},
   "scripts": {
@@ -17,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ajthor/Language-Parser.git"
+    "url": "https://github.com/ajthor/babel.js.git"
   },
   "keywords": [
     "language",
@@ -28,7 +30,7 @@
   "author": "Adam Thorpe",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ajthor/Language-Parser/issues"
+    "url": "https://github.com/ajthor/babel.js/issues"
   },
-  "homepage": "https://github.com/ajthor/Language-Parser"
+  "homepage": "https://github.com/ajthor/babel.js"
 }
