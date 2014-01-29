@@ -1,8 +1,8 @@
 var _ = require("lodash");
-var lev = require("../levenshtein.js");
+var lev = require("levenshtein");
+
 var word = require("../word/word.js");
-var collection = require("../collection/collection.js");
-var lexis = require("../lexis/lexis.js");
+var collection = require("backbone-node").collection;
 
 var dict = module.exports = collection.extend({
 	initialize: function() {
@@ -54,28 +54,30 @@ var dict = module.exports = collection.extend({
 
 		// Find words contained in this one we already know.
 		this.forEach(function(item) {
-			if((index = args.get("word").search(item.get("word"))) !== -1) {
+			var search = item.get("word");
+			var index = ((args.get("word") > search) ? args.get("word") : search).indexOf(search);
+			if(index !== -1) {
 				possible.push(item);
 			}
 		});
 
-		var dist = function(item1, item2) {
-			var levdist = lev(item1.get("word"), item2.get("word"));
-			var lendist = item1.get("word").length - item2.get("word").length;
-			return Math.min(levdist, lendist);
-		};
+		// var dist = function(item1, item2) {
+		// 	var levdist = lev(item1.get("word"), item2.get("word"));
+		// 	var lendist = item1.get("word").length - item2.get("word").length;
+		// 	return Math.min(levdist, lendist);
+		// };
 
 		if(result) possible = _.union(possible, [result]);
 		if(possible.length > 0) {
 			possible.forEach(function(item) {
-				// If the distance between the current result is greater
-				// than the distance between this item, change result.
-				if(!result) result = item;
-				else if(dist(result, args) > dist(item, args)) result = item;
+			// 	// If the distance between the current result is greater
+			// 	// than the distance between this item, change result.
+			// 	if(!result) result = item;
+			// 	else if(dist(result, args) > dist(item, args)) result = item;
 			});
 		}
 
-		if(result) console.log("Possible match:", result.get("word"));
+		if(possible) console.log("Possible match:", possible);
 
 		return result;
 	}

@@ -1,6 +1,5 @@
 var _ = require("lodash");
-var model = require("../model/model.js");
-var lexis = require("../lexis/lexis.js");
+var model = require("backbone-node").model;
 
 var word = module.exports = model.extend({
 	initialize: function(word) {
@@ -18,14 +17,14 @@ var word = module.exports = model.extend({
 
 		aggregate = _.union([args], (args.get("related") || []));
 
-		root = this.findRoot(aggregate);
-		console.log("root", root);
-		aggregate.forEach(function(item) {
-			// Compare.
-			if(root) item.set("root", root);
-			// Find usage. If usage is the same, same category.
+		// root = lexis(aggregate);
+		// console.log("root", root);
+		// aggregate.forEach(function(item) {
+		// 	// Compare.
+		// 	if(root) item.set("root", root);
+		// 	// Find usage. If usage is the same, same category.
 
-		}, this);
+		// }, this);
 
 		// If this word or its forms are close, 
 		// then let's make them related.
@@ -41,30 +40,6 @@ var word = module.exports = model.extend({
 			var remaining = _.difference(related, [item]);
 			item.set("related", remaining);
 		}, this);
-	},
-
-	findRoot: function(args) {
-		var root = "";
-		var words = [this.get("word")];
-
-		if(!Array.isArray(args)) args = [args];
-		args.forEach(function(item) {
-			if(!(item instanceof word)) item = new word(item);
-			words.push(item.get("word"));
-		});
-
-		lexis(words).prefixes().shared(function(item) {
-			if(item.length > root.length) {
-				root = item;
-			}
-		});
-
-		// Should be a significant length.
-		if(!(root.length > 3)) {
-			return null;
-		}
-
-		return root;
 	}
 
 });
