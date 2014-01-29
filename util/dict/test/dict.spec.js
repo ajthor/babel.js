@@ -1,6 +1,6 @@
 var _ = require("underscore");
 var word = require("../../word/word.js");
-var collection = require("../../collection/collection.js");
+var collection = require("backbone-node").collection;
 
 describe("dict", function() {
 
