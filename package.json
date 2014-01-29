@@ -1,17 +1,36 @@
 {
-  "name": "parser",
+  "name": "babel.js",
   "version": "0.0.1",
-  "description": "Language parser.",
-  "main": "parser.js",
+  "description": "Interpret patterns in strings.",
+  "main": "babel.js",
   "directories": {
     "test": "test"
   },
+  "dependencies": {
+    "lodash": "~2.4.1",
+    "when": "~2.7.1",
+    "backbone-node": "git://github.com/ajthor/backbone-node.git/",
+    "parsejs": "git://github.com/ajthor/parse.js.git",
+    "levenshtein": "git://github.com/ajthor/levenshtein.git"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ajthor/babel.js.git"
+  },
+  "keywords": [
+    "language",
+    "parse",
+    "babel",
+    "pattern"
+  ],
   "author": "Adam Thorpe",
   "license": "MIT",
-  "dependencies": {
-    "lodash": "~2.4.1"
-  }
+  "bugs": {
+    "url": "https://github.com/ajthor/babel.js/issues"
+  },
+  "homepage": "https://github.com/ajthor/babel.js"
 }
