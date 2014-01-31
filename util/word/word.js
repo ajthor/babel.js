@@ -12,15 +12,21 @@ var word = module.exports = model.extend({
 		if(!Array.isArray(args)) args = [args];
 		args = _.uniq(args);
 
+		var working = this.get("word");
+
 		args.forEach(function(item) {
 			if(!(item instanceof word)) item = new word(item);
-			var aggregate = [];
+			var compare = item.get("word");
+			// var aggregate = [];
 			var related = false;
 
-			aggregate = _.union([item], (item.get("related") || []));
+			compare = working.slice(working.indexOf(compare[0]));
+			// console.log("word", working, compare);
+			// aggregate = _.union([item], (item.get("related") || []));
 
 			// The first letter is almost always right.
 			// Trim to the first letter and lev distance from there.
+
 
 			if(related) {
 				this.relateTo(item);
