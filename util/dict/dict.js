@@ -38,31 +38,19 @@ var dict = module.exports = collection.extend({
 			if(distance < 3) possible.push(compare);
 		}, this);
 
-		// Compare if this word is contained in others 
-		// or if others are contained in this.
-		this.objects.forEach(function(item) {
-			var needle = working;
-			var haystack = item.get("word");
-			if(haystack.length < needle.length) {
-				haystack = working;
-				needle = item.get("word");
-			}
-			if(haystack.search(needle) !== -1) possible.push(item);
-		});
-
 		// Find fuzzy matches in the whole dictionary. 
-		// Based on suffixes, i.e. removing prefixes.
-		parse(working).suffixes(function(suffix) {
-			if(suffix.length < 2) return;
-			// console.log(suffix);
-			var result = this.get(suffix);
+		// Based on clusters.
+		parse(working).clusters(function(cluster) {
+			if(cluster.length < 2) return;
+			// console.log(cluster);
+			var result = this.get(cluster);
 			if(result) possible.push(result);
 		}.bind(this));
 
 		// args.set("possible", possible);
-		// console.log("possible matches", args.get("possible"));
+		console.log("possible matches", _.uniq(possible));
 
-		return possible;
+		return _.uniq(possible);
 	}
 
 });
