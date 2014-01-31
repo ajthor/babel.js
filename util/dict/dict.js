@@ -4,6 +4,8 @@ var lev = require("levenshtein");
 var word = require("../word/word.js");
 var collection = require("backbone-node").collection;
 
+var parse = require("parsejs");
+
 var dict = module.exports = collection.extend({
 	initialize: function() {
 		this._template = word;
@@ -16,78 +18,54 @@ var dict = module.exports = collection.extend({
 		});
 	},
 
-	fuzzyMatch: function(args) {
+	match: function(args) {
 		if(!(args instanceof word)) args = new word(args);
+		if(args.get("word").length < 2) return null;
+		var working = args.get("word");
+		var result;
+		var possible = [];
+
+		// Find fuzzy matches which are adjacent in the dictionary.
 		var index = _.sortedIndex(this.objects, args, function(item) {
 			return item.get("word");
 		});
 
-		var result = null;
-		var pdist, ndist;
-		var prev = this.at(index-1);
-		var next = this.at(index);
+		[index, index+1, index-1, index-2].forEach(function(item) {
+			var distance;
+			var compare = this.at(item);
+			if(!compare) return;
+			distance = lev(working, compare.get("word"));
+			if(distance < 3) possible.push(compare);
+		}, this);
 
-		if(prev) {
-			pdist = lev(args.get("word"), prev.get("word"));
-			// console.log(prev.get("word"), pdist);
-			if(pdist < 3) result = prev;
-		}
-		if(next) {
-			ndist = lev(args.get("word"), next.get("word"));
-			// console.log(next.get("word"), pdist);
-			if((ndist < pdist) && (ndist < 4)) result = next;
-		}
-
-		// if(result) console.log("Found a fuzzy match:", result.get("word"));
-
-		return result;
-	},
-
-	closestMatch: function(args) {
-		if(!(args instanceof word)) args = new word(args);
-		var index;
-		var result = null;
-		var possible = [];
-
-		// Fuzzy match this word. 
-		var result = this.fuzzyMatch(args);
-
-		// Find words contained in this one we already know.
-		this.forEach(function(item) {
-			var search = item.get("word");
-			var index = ((args.get("word") > search) ? args.get("word") : search).indexOf(search);
-			if(index !== -1) {
-				possible.push(item);
+		// Compare if this word is contained in others 
+		// or if others are contained in this.
+		this.objects.forEach(function(item) {
+			var needle = working;
+			var haystack = item.get("word");
+			if(haystack.length < needle.length) {
+				haystack = working;
+				needle = item.get("word");
 			}
+			if(haystack.search(needle) !== -1) possible.push(item);
 		});
 
-		// var dist = function(item1, item2) {
-		// 	var levdist = lev(item1.get("word"), item2.get("word"));
-		// 	var lendist = item1.get("word").length - item2.get("word").length;
-		// 	return Math.min(levdist, lendist);
-		// };
+		// Find fuzzy matches in the whole dictionary. 
+		// Based on suffixes, i.e. removing prefixes.
+		parse(working).suffixes(function(suffix) {
+			if(suffix.length < 2) return;
+			// console.log(suffix);
+			var result = this.get(suffix);
+			if(result) possible.push(result);
+		}.bind(this));
 
-		if(result) possible = _.union(possible, [result]);
-		if(possible.length > 0) {
-			possible.forEach(function(item) {
-			// 	// If the distance between the current result is greater
-			// 	// than the distance between this item, change result.
-			// 	if(!result) result = item;
-			// 	else if(dist(result, args) > dist(item, args)) result = item;
-			});
-		}
+		// args.set("possible", possible);
+		// console.log("possible matches", args.get("possible"));
 
-		if(possible) console.log("Possible match:", possible);
-
-		return result;
+		return possible;
 	}
 
 });
-
-
-
-
-
 
 
 

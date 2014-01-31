@@ -9,29 +9,25 @@ var word = module.exports = model.extend({
 	},
 
 	compare: function(args) {
-		if(!(args instanceof word)) args = new word(args);
-		var result;
-		var root;
-		var related = false;
-		var aggregate  = [];
+		if(!Array.isArray(args)) args = [args];
+		args = _.uniq(args);
 
-		aggregate = _.union([args], (args.get("related") || []));
+		args.forEach(function(item) {
+			if(!(item instanceof word)) item = new word(item);
+			var aggregate = [];
+			var related = false;
 
-		// root = lexis(aggregate);
-		// console.log("root", root);
-		// aggregate.forEach(function(item) {
-		// 	// Compare.
-		// 	if(root) item.set("root", root);
-		// 	// Find usage. If usage is the same, same category.
+			aggregate = _.union([item], (item.get("related") || []));
 
-		// }, this);
+			// The first letter is almost always right.
+			// Trim to the first letter and lev distance from there.
 
-		// If this word or its forms are close, 
-		// then let's make them related.
-		if(related) {
-			this.relateTo(args);
-		}
-		return result;
+			if(related) {
+				this.relateTo(item);
+			}
+		}, this);
+
+		// return result;
 	},
 
 	relateTo: function(args) {
