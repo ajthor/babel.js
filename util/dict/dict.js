@@ -38,17 +38,13 @@ var dict = module.exports = collection.extend({
 			if(distance < 3) possible.push(compare);
 		}, this);
 
-		// Find fuzzy matches in the whole dictionary. 
-		// Based on clusters.
+		// Find fuzzy matches in the whole dictionary.
 		parse(working).clusters(function(cluster) {
 			if(cluster.length < 2) return;
-			// console.log(cluster);
+			// Look up cluster in dictionary. If it exists, add it.
 			var result = this.get(cluster);
 			if(result) possible.push(result);
 		}.bind(this));
-
-		// args.set("possible", possible);
-		console.log("possible matches", _.uniq(possible));
 
 		return _.uniq(possible);
 	}
