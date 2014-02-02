@@ -22,38 +22,41 @@ var word = module.exports = model.extend({
 			var compare = item.get("word");
 			// Don't compare shorter words.
 			if(compare.length < 4) return;
-			console.log("compare:", compare);
+
+			console.log(working, "->", compare);
 
 			var dist;
-			var stem, itemStem;
+			var relatedness;
+			var stem;
 			var aggregate = [];
 			var relate = false;
+
 			// Calculate the distance.
 			dist = lev(working, compare);
+			relatedness = (1/dist)*Math.log(compare.length);
+
+			console.log(relatedness);
 			// And if it's close enough, accounting for smaller words,
-			if((working.length/(dist+working.length))*Math.log(compare.length) > 1) {
+			if(relatedness > 1) {
 				// Then check the stem.
-				aggregate = _.union([this, item], item.get("related"));
+				aggregate = _.union([this, item]);//, item.get("related"));
 				stem = parse(_.map(aggregate, function(thing) {
 					return thing.get("word");
 				})).stem();
 
-				if(stem) {
+				// if(stem) console.log( stem, stem.length,  (2*stem.length)/(working.length+compare.length) );
+				// If no stem returned, no relation.
+				if(stem && ( (2*stem.length)/(working.length+compare.length) >= 0.75) ) {
 
 					relate = true;
 
 					// if(!item.get("related") || parse(_.map(_.union([item], item.get("related")), function(thing) {
 					// 	return thing.get("word");
 					// })).stem().search(stem) !== -1) {
-						console.log("related!!!!!!");
+						console.log("I think", working, "and", compare, "are related.");
 					// 	relate = true;
 					// }
 				}
-				// If no stem returned, no relation.
-				// If stem and stem of the other are the same or one 
-				// If the stem of the other doesn't exist, relate them.
-
-				// relate = true;
 				
 				// Relate to eachother. 
 				if(relate) {

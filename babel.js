@@ -12,20 +12,19 @@ var dict = require("./util/dict/dict.js");
 
 var babel = module.exports = function babel(text) {
 	var known = new dict();
-
-	parse(text).sentences(function(sentence) {
+	// For every ten sentences, one sentence at a time, ...
+	parse(text).pattern(/(?:[^\.!\?]+[\.!\?\"\']+){0,10}/gi).sentences(function(sentence) {
 
 		parse(sentence).words(function(item) {
-			var possible;
+			var matches;
 			var exists;
 			if(!(exists = known.lookup(item))) {
-				console.log("Unknown word: >>", item, "<< found. Analyzing...");
 				item = new word(item);
 				// Analyze
 
 				// Compare this word to other similar words.
-				possible = known.match(item);
-				if(possible) item.compare(possible);
+				matches = known.match(item);
+				if(matches) item.compare(matches);
 
 				// Add to list of known words.
 				known.add(item);
@@ -36,7 +35,6 @@ var babel = module.exports = function babel(text) {
 
 		});
 
-		console.log("End of sentence.");
 
 	});
 
