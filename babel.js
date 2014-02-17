@@ -3,9 +3,6 @@ var when = require("when");
 
 var parse = require("parsejs");
 
-var word = require("./util/word/word.js");
-var dict = require("./util/dict/dict.js");
-
 //
 //
 //

@@ -33,6 +33,9 @@ var word = module.exports = model.extend({
 
 			// Calculate the distance.
 			dist = lev(working, compare);
+			// Calculate the relatedness.
+			// - As distance increases, relatedness decreases.
+			// - As length decreases, relatedness decreases. Harder to find relationships.
 			relatedness = (1/dist)*Math.log(compare.length);
 
 			console.log(relatedness);
@@ -46,6 +49,7 @@ var word = module.exports = model.extend({
 
 				// if(stem) console.log( stem, stem.length,  (2*stem.length)/(working.length+compare.length) );
 				// If no stem returned, no relation.
+				// If stem is significant enough, cake a relation.
 				if(stem && ( (2*stem.length)/(working.length+compare.length) >= 0.75) ) {
 
 					relate = true;
