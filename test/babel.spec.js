@@ -14,9 +14,21 @@ describe("babel", function() {
 		}).not.toThrow();
 	});
 
+	// it("should run main function without throwing", function() {
+	// 	expect(function() {
+	// 		var instance = new babel();
+	// 		instance.parse("test");
+	// 		instance.parse("tester");
+	// 		instance.parse("testing");
+	// 		instance.parse("testable");
+	// 		instance.parse("testing");
+	// 	}).not.toThrow();
+	// });
+
 	it("should run main function without throwing", function() {
 		expect(function() {
-			var instance = new babel(test);
+			var instance = new babel();
+			instance.parse(totc);
 		}).not.toThrow();
 	});
 
