@@ -6,8 +6,8 @@ var parse = require("parsejs");
 var collection = require("backbone-node").collection;
 
 
-var node = require("./static.js").node;
-var layer = require("./static.js").layer;
+var node = require("./util/tree/tree.js").node;
+var layer = require("./util/tree/tree.js").layer;
 
 //
 //
@@ -30,7 +30,7 @@ var babel = module.exports = function babel(options) {
 _.extend(babel.prototype, {
 	parse: function(input) {
 		try {
-
+			var count = 0;
 			// For every ten sentences, one sentence at a time, ...
 			// parse(input).pattern(/(?:[^\.!\?]+[\.!\?\"\']+){0,10}/gi).sentences(function(sentence) {
 
@@ -38,12 +38,13 @@ _.extend(babel.prototype, {
 				parse(input).words(function(item) {
 					
 					console.log("\nParsing {", item, "} ...");
+					count++;
 					// Force array type.
 					if(typeof item === 'string') {
 						item = item.split('');
 						item.push("#"); // End of word character
 						// If you're struggling with whether or not this is necessary,
-						// think about single-letter morphemes at the end of words, i.e. '-s'
+						// consider single-letter morphemes at the end of words, i.e. '-s'
 					}
 					// Reset backtrace.
 					this.backtrace = [];
@@ -56,6 +57,8 @@ _.extend(babel.prototype, {
 						return item.incidence;
 					});
 
+
+					// var incidenceMin = _.min(incidence);
 					var predicted = [];
 					var sum = 0;
 					// Working backwards, ...
@@ -66,7 +69,8 @@ _.extend(babel.prototype, {
 						
 						// Weight each item based on its proximity to the beginning of the word.
 						potential[i] = Math.round(Math.log(i+1)*potential[i]);
-						// incidence[i] = Math.round(100*Math.log(i+1)*incidence[i])/100;
+						// incidence[i] = Math.ceil((Math.log(i+1)/Math.E)*incidence[i]*100)/100;
+						// incidence[i] = +!!(incidence[i]-incidenceMin);
 						// Find an occurrence which has a frequency larger than 3.
 						if(potential[i] >= 3) {
 							predicted.push(item.slice(0, i));
@@ -90,7 +94,7 @@ _.extend(babel.prototype, {
 
 
 		
-			console.log(this.morphemes);
+			console.log("\nAnalyzed %d words.", count);
 
 
 
