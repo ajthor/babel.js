@@ -1,38 +1,23 @@
 var _ = require("lodash");
-var node = require("./static.js").node;
+var neuron = require("./static.js").neuron;
 var layer = require("./static.js").layer;
 // Network Class
 // -------------
 var network = module.exports = function(options) {
 	if(!(this instanceof network)) return new network(options);
-	this.options = _.defaults((options || {}), {
-		iterations: 200
-	});
-	// Create layer 1
-	this._layer = new layer(this);
-	this._layer.__network__ = this;
-	this.backtrace = [];
+	
 };
 
 _.extend(network.prototype, {
-	parse: function(input) {
+	input: function(input) {
 		try {
+			// Parse input.
 			if(!Array.isArray(input)) input = [input];
-			input.forEach(function(item) {
+			
+			// Pass input to perceptron(s).
+			var n = new neuron();
+			console.log(n.parse(input));
 
-				var result = [];
-				console.log("\n\nParsing {", item, "} ...");
-				// Force array type.
-				if(typeof item === 'string') {
-					item = item.split('');
-					item.push("#"); // End of word character
-				}
-				// Reset backtrace.
-				this.backtrace = [];
-				// Pass item through layer and get result.
-				result = this._layer.parse(item);
-
-			}, this);
 		} catch(e) {
 			console.log("ERROR:", e.stack);
 		}

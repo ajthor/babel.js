@@ -14,21 +14,13 @@ describe("ann", function() {
 		var a = new ann();
 
 		// a.parse(["lorem", "ipsum", "dolor", "sit", "amet", "Lorem"]);
-		a.parse("test");
-		a.parse("tester");
-		a.parse("testing");
-		
+		// a.parse("test");
+		// a.parse("tester");
 		// a.parse("testing");
-		// a.parse("testify");
-		// a.parse("testable");
 
-
-		// a.parse("decision");
-		// a.parse("decide");
-		// a.parse("deciding");
-		// a.parse("decider");
-
-		// a.parse("decibel");
+		a.input([0,0,0,0]);
+		a.input([1,1,1,1,0,0]);
+		a.input([1,1,1,1,0,0,0]);
 
 	});
 
