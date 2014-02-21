@@ -1,10 +1,7 @@
 var _ = require("lodash");
-var lev = require("levenshtein");
 
 var word = require("../word/word.js");
 var collection = require("backbone-node").collection;
-
-var parse = require("parsejs");
 
 var dict = module.exports = collection.extend({
 	initialize: function() {
@@ -18,35 +15,10 @@ var dict = module.exports = collection.extend({
 		});
 	},
 
-	match: function(args) {
-		if(!(args instanceof word)) args = new word(args);
-		if(args.get("word").length < 2) return null;
-		var working = args.get("word");
-		var result;
-		var possible = [];
-
-		// Find fuzzy matches which are adjacent in the dictionary.
-		var index = _.sortedIndex(this.objects, args, function(item) {
-			return item.get("word");
+	display: function() {
+		this.forEach(function(item) {
+			console.log("Entry: ", this.item.get("word"));
 		});
-
-		[index, index+1, index-1, index-2].forEach(function(item) {
-			var distance;
-			var compare = this.at(item);
-			if(!compare) return;
-			distance = lev(working, compare.get("word"));
-			if(distance < 3) possible.push(compare);
-		}, this);
-
-		// Find fuzzy matches in the whole dictionary.
-		parse(working).clusters(function(cluster) {
-			if(cluster.length < 2) return;
-			// Look up cluster in dictionary. If it exists, add it.
-			var result = this.get(cluster);
-			if(result) possible.push(result);
-		}.bind(this));
-
-		return _.uniq(possible);
 	}
 
 });
