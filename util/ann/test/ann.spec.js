@@ -11,16 +11,24 @@ describe("ann", function() {
 
 	it("instantiation should work", function() {
 
-		var a = new ann();
+		var a = new ann([2]);
+		var output;
 
 		// a.parse(["lorem", "ipsum", "dolor", "sit", "amet", "Lorem"]);
 		// a.parse("test");
 		// a.parse("tester");
 		// a.parse("testing");
 
-		a.input([0,0,0,0]);
-		a.input([1,1,1,1,0,0]);
-		a.input([1,1,1,1,0,0,0]);
+		// a.input([0,0,0,0]);
+		// a.input([1,1,1,1,0,0]);
+		// a.input([1,1,1,1,0,0,0]);
+
+		output = a.input([0,0]);
+		a.train(output, [0,0]);
+
+		a.input([0,1]);
+		a.input([1,0]);
+		a.input([1,1]);
 
 	});
 

@@ -17,6 +17,8 @@ _.extend(crs.prototype, {
 
 });
 
+
+
 var system = exports.system = function system(f, weight) {
 	if(!(this instanceof system)) return new system(f);
 	this.rankingFunction = f;

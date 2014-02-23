@@ -1,24 +1,48 @@
 var _ = require("lodash");
 
+// Network Class
+// -------------
+var network = module.exports = function newtwork(options) {
+	if(!(this instanceof network)) return new network(options);
+	this.options = _.defaults((options || {}), {
+		iterations: 200
+	});
+	// Create layer 1
+	this._layer = new layer(this);
+};
+
+_.extend(network.prototype, {
+	parse: function(input) {
+		console.log("\nParsing {", input, "} ...");
+		// Force array type.
+		if(typeof input === 'string') {
+			input = input.split('');
+			input.push("#"); // End of word character
+			// If you're struggling with whether or not this is necessary,
+			// consider single-letter morphemes at the end of words, i.e. '-s'
+		}
+		// Reset trace.
+		this.trace = [];
+		// Pass input through layer and get difference.
+		return this._layer.parse(input);
+	}
+});
+
 // Layer Class
 // -----------
 var layer = exports.layer = function layer(parent) {
 	this._nodes = [];
-	this.__parent__ = parent;
-	this.__network__ = parent.__network__;
+	this.__network__ = parent;
 };
 
 _.extend(layer.prototype, {
-
 	parse: function(input) {
 		var result;
 		var working;
-		// console.log("layer received", input);
 		// Clone input.
 		input = input.slice();
 		// Take off the first letter.
 		working = input.shift();
-		// console.log("number of possibilities:", this._nodes.length);
 		// Cycle through all nodes and compare.
 		for(var i = 0, len = this._nodes.length; i < len; i++) {
 			result = this._nodes[i].parse(working, input);
@@ -30,7 +54,7 @@ _.extend(layer.prototype, {
 
 		// If no result, it means there is no node available to handle this input.
 		// Create a new node to handle this specific input,
-		var n = new node(working, this);
+		var n = new node(working, this.__network__);
 		this._nodes.push(n);
 		// and run the input through it.
 		result = n.parse(working, input);
@@ -38,29 +62,26 @@ _.extend(layer.prototype, {
 		
 		return result;
 	}
-
 });
 
 // Node Class
 // ----------
 var node = exports.node = function node(comparator, parent) {
 	this.comparator = comparator;
-	this.__parent__ = parent;
-	this.__network__ = parent.__network__;
+	this.__network__ = parent;
 
 	this.incidence = 0;
 };
 
 _.extend(node.prototype, {
 	parse: function(compare, input) {
-		// console.log("comparing", this.comparator, "<<<>>>", compare);
 		var result = [];
 		var remainder;
 		// Check for a match.
 		if(_.isEqual(this.comparator, compare)) {
 			// Found a match. Fire node.
-			// Extend backtrace.
-			this.__network__.backtrace.push(this);
+			// Extend trace.
+			this.__network__.trace.push(this);
 			// Increment incidence
 			this.incidence++;
 			// Get the rest of the string.
@@ -69,7 +90,7 @@ _.extend(node.prototype, {
 			// Continue with another layer unless the remainder is zero.
 			if(remainder.length > 0) {
 				if(!this._layer) {
-					this._layer = new layer(this);
+					this._layer = new layer(this.__network__);
 				}
 				result = this._layer.parse(remainder);
 			}
