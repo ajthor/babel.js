@@ -86,18 +86,27 @@ _.extend(network.prototype, {
 		// Get deltas of output layer.
 		for(i = 0, len = output.length; i < len; i++) {
 			// Difference multiplied by the derivative of the activation (sigmoid).
-			this.delta[last][i] = output[i] * (1 - output[i]) * (target[i] - output[i]);
+			this.delta[i] = output[i] * (1 - output[i]) * (target[i] - output[i]);
+		}
+		// For the last layer, ...
+		for(i = 0, len = this._layers[last]._neurons.length; i < len; i++) {
+
+			// For every neuron and its weights, ...
+			for(j = 0; j < this._layers[last]._neurons[i].w.length; j++) {
+				console.log("d_this = d * w", this.delta[j], this._layers[last]._neurons[i].w);
+			}
 		}
 		console.log(this.delta);
-		console.log(this._layers.length);
 
-		// For every preceding layer, ... (-1 here makes it every layer before output)
-		for(var i = last-1; i >= 0; i--) {
-			error = 0.0;
-			for(j = 0, len = this._layers[i+1]._neurons.length + 1; j < len; j++) {
-				
+		// For every layer, ... (-1 here makes it every layer before output)
+		if(last > 1) {
+			for(var i = last-1; i >= 0; i--) {
+				error = 0.0;
+				for(j = 0, len = this._layers[i+1]._neurons.length + 1; j < len; j++) {
+					
+				}
+				// this.delta[i]
 			}
-			this.delta[i]
 		}
 
 

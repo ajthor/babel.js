@@ -27,6 +27,7 @@ _.extend(layer.prototype, {
 var neuron = exports.neuron = function neuron() {
 	// Create weights array, including bias.
 	this.w = [];
+	this.delta = [];
 };
 
 _.extend(neuron.prototype, {
