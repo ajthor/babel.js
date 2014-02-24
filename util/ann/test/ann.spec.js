@@ -11,7 +11,7 @@ describe("ann", function() {
 
 	it("instantiation should work", function() {
 
-		var a = new ann([2]);
+		var a = new ann([3,2,1]);
 		var output;
 
 		// a.parse(["lorem", "ipsum", "dolor", "sit", "amet", "Lorem"]);

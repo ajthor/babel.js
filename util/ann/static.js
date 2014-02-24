@@ -12,7 +12,7 @@ _.extend(layer.prototype, {
 	parse: function(input) {
 		var result = [];
 		input = input.slice();
-		input.unshift(this.bias); // Bias
+		// input.unshift(this.bias); // Bias
 		// Run input through all neurons.
 		for(var i = 0, len = this._neurons.length; i < len; i++) {
 			result[i] = this._neurons[i].parse(input);
@@ -27,7 +27,8 @@ _.extend(layer.prototype, {
 var neuron = exports.neuron = function neuron() {
 	// Create weights array, including bias.
 	this.w = [];
-	this.delta = [];
+	this.delta = 1;
+	this.momentum = 1;
 };
 
 _.extend(neuron.prototype, {
