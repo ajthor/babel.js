@@ -8,13 +8,8 @@ var network = module.exports = function(neurons, options) {
 	// Set default options.
 	this.options = _.defaults((options || {}), {
 		iterations: 1,
-		learningRate: 0.1,
-		activation: function(input) {
-			return ( 1 / (1 + Math.exp(-1 * input)) );
-		}
+		learningRate: 0.1
 	});
-	// Set delta values for training.
-	this.delta = [];
 	// Initialize network.
 	if(!neurons) neurons = [1]; // Single layer.
 	this.initialize(neurons);
@@ -29,7 +24,6 @@ _.extend(network.prototype, {
 			// Initialize layers. For each layer, ...
 			for(var i = 0, len = neurons.length; i < len; i++) {
 				this._layers[i] = new layer();
-				this.delta[i] = [];
 				// Populate with n new neurons.
 				for(j = 0; j < neurons[i]; j++) {
 					this._layers[i]._neurons.push(new neuron());
@@ -50,12 +44,10 @@ _.extend(network.prototype, {
 			for(i = 0; i < this.options.iterations; i++) {
 				// For each layer, ...
 				for(j = 0; j < this._layers.length; j++) {
-					result = this._layers[j].parse(result);
+					result = this._layers[j].input(result);
 				}
 
 			}
-
-			console.log("RESULT:", result);
 
 			var sum = result.reduce(function(a, b) {
 				return a + b;
@@ -69,78 +61,69 @@ _.extend(network.prototype, {
 	},
 
 	train: function(output, target) {
-		console.log(output, target);
-		// The learning rule can be summarized in the following two equations:
 
-		// b = b + [ T - A ]
-
-		// For all inputs i:
-
-		// W(i) = W(i) + [ T - A ] * P(i)
-		
-		// Where W is the vector of weights, P is the input vector presented 
-		// to the network, T is the correct result that the neuron should 
-		// have shown, A is the actual output of the neuron, and b is the bias.
 
 		var i, j, k, error, dx;
 		var layer, previous;
 
-		// Working backwards, for each layer, calculate delta values.
-		// output -> layer n -> ... -> layer 2 -> layer 1 -> layer 0
-		for(i = this._layers.length-1; i >= 0; i--) {
-			// Set this layer to the layer variable for easier referencing.
-			layer = this._layers[i];
+		for(var iterations = 0; iterations < this.options.iterations; iterations++) {
 
-			if(!this._layers[i+1]) { // This is the last layer.
-				// Do stuff using output instead of next layer's neurons.
-				// For each output, calculate the delta.
-				for(j = 0; j < output.length; j++) {
-					layer._neurons[j].momentum = layer._neurons[j].delta;
-					layer._neurons[j].delta = (target[j] - output[j]);
-				}
+			// Working backwards, for each layer, calculate delta values.
+			// output -> layer n -> ... -> layer 2 -> layer 1 -> layer 0
+			for(i = this._layers.length-1; i >= 0; i--) {
+				// Set this layer to the layer variable for easier referencing.
+				layer = this._layers[i];
 
-				continue;
-			}
-			// Otherwise, the next layer exists, and we will use
-			// its neurons to backpropagate this layer.
-			else {
-				previous = this._layers[i+1]._neurons;
-
-				// For each neuron in this layer, there will be
-				// a corresponding weight in the next layer's neurons.
-				for(j = 0; j < layer._neurons.length; j++) {
-					error = 0.0;
-					// So go through the previous layer's neurons's weights
-					// and get those weights * that layer's delta value.
-					for(k = 0; k < previous.length; k++) {
-						// The weight corresponding to this neuron will be j.
-						error += previous[k].w[j] * previous[k].delta;
+				if(!this._layers[i+1]) { // This is the last layer.
+					// Do stuff using output instead of next layer's neurons.
+					// For each output, calculate the delta.
+					for(j = 0; j < output.length; j++) {
+						layer._neurons[j].momentum = layer._neurons[j].delta;
+						layer._neurons[j].delta = layer._neurons[j].output * (1 - layer._neurons[j].output) * (target[j] - layer._neurons[j].output);
+						// layer._neurons[j].delta = target[j] - layer._neurons[j].output;
 					}
-					// That will give us this neuron's delta value.
-					layer._neurons[j].momentum = layer._neurons[j].delta;
-					layer._neurons[j].delta = error;
-
 				}
+				// Otherwise, the next layer exists, and we will use
+				// its neurons to backpropagate this layer.
+				else {
+					previous = this._layers[i+1]._neurons;
 
-			} // End else statement.
+					// For each neuron in this layer, there will be
+					// a corresponding weight in the next layer's neurons.
+					for(j = 0; j < layer._neurons.length; j++) {
+						error = 0.0;
+						// So go through the previous layer's neurons's weights
+						// and get those weights * that layer's delta value.
+						for(k = 0; k < previous.length; k++) {
+							// The weight corresponding to this neuron will be j.
+							error += previous[k].w[j] * previous[k].delta;
+						}
+						// That will give us this neuron's delta value.
+						layer._neurons[j].momentum = layer._neurons[j].delta;
+						layer._neurons[j].delta = layer._neurons[j].output * (1 - layer._neurons[j].output) * error;
 
-		}
-		// Now that every neuron has its delta values, we can multiply the 
-		// weights of each neuron by the delta in order to get the new values.
-		for(i = 0; i < this._layers.length; i++) {
+					}
 
-			console.log("LAYER", this._layers[i]);
+				} // End else statement.
 
-			// For each neuron, multiply every weight by the delta value.
-			for(j = 0; j < this._layers[i]._neurons.length; j++) {
+			}
+			// Now that every neuron has its delta values, we can multiply the 
+			// weights of each neuron by the delta in order to get the new values.
+			for(i = 0; i < this._layers.length; i++) {
 
-				for(k = 0; k < this._layers[i]._neurons[j].w.length; k++) {
-					// dx = something * (1 - something);
-					// this._layers[i]._neurons[j].w[k] += this.options.learningRate * this._layers[i]._neurons[j].delta * dx
+
+				// For each neuron, multiply every weight by the delta value.
+				for(j = 0; j < this._layers[i]._neurons.length; j++) {
+					// Calculate derivative value.
+					// dx = this._layers[i]._neurons[j].output * (1 - this._layers[i]._neurons[j].output);
+
+					for(k = 0; k < this._layers[i]._neurons[j].w.length; k++) {
+						this._layers[i]._neurons[j].w[k] += this.options.learningRate * this._layers[i]._neurons[j].delta * this._layers[i]._neurons[j].output;
+					}
 				}
 			}
-		}
 
+		}
 
 	}
 
