@@ -1,5 +1,5 @@
 {
-  "name": "babel.js",
+  "name": "babeljs",
   "version": "0.0.1",
   "description": "Interpret patterns in strings.",
   "main": "babel.js",
@@ -11,7 +11,9 @@
     "when": "~2.7.1",
     "backbone-node": "git://github.com/ajthor/backbone-node.git/",
     "parsejs": "git://github.com/ajthor/parse.js.git",
-    "levenshtein": "git://github.com/ajthor/levenshtein.git"
+    "levenshtein": "git://github.com/ajthor/levenshtein.git",
+    "rxjs": "git://github.com/ajthor/rx.js.git",
+    "annjs": "git://github.com/ajthor/ann.js.git"
   },
   "devDependencies": {},
   "scripts": {
