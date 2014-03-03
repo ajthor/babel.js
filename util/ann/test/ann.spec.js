@@ -14,39 +14,16 @@ describe("ann", function() {
 		var a = new ann([2,2,1]);
 		var output;
 
-		for(var i = 0; i < 100; i++) {
-			a.train(a.input([0,0]), [0]);
-			a.train(a.input([0,1]), [1]);
-			a.train(a.input([1,0]), [1]);
-			a.train(a.input([1,1]), [0]);
-		}
+		a.train([[0,0], [0,1], [1,0], [1,1]], [[0], [1], [1], [0]]);
+		// a.train([0,1], [1]);
+		// a.train([1,0], [1]);
+		// a.train([0,0], [0]);
+
 		console.log(a.input([0,0]));
 		console.log(a.input([1,0]));
 		console.log(a.input([0,1]));
 		console.log(a.input([1,1]));
 
-		// a.input([0,0,0,0]);
-		// a.input([1,1,1,1,0,0]);
-		// a.input([1,1,1,1,0,0,0]);
-
-		// output = a.input([0,0,0,0]);
-		// for(var i = 0; i < output.length; i++) {
-		// 	output[i] = Math.round(output[i] * 100) / 100;
-		// }
-		// a.train(output, [0]);
-		// console.log(output);
-		// console.log(a.input([0,0,0,0]));
-
-
-
-		// output = a.input([1,1,1,0]);
-		// for(var i = 0; i < output.length; i++) {
-		// 	output[i] = Math.round(output[i] * 100) / 100;
-		// }
-		// a.train(output, [0.3]);
-		// console.log(output);
-		// console.log(a.input([0,0,0,0]));
-		// console.log(a.input([1,1,1,0]));
 
 	});
 

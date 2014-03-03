@@ -1,17 +1,22 @@
 var _ = require("lodash");
 var neuron = require("./static.js").neuron;
 var layer = require("./static.js").layer;
+
+var system = require("./util/training/system.js");
+var backpropSystem = require("./util/training/algorithms/backpropagation.js");
 // Network Class
 // -------------
 var network = module.exports = function(neurons, options) {
 	if(!(this instanceof network)) return new network(neurons, options);
 	// Set default options.
 	this.options = _.defaults((options || {}), {
-		iterations: 1,
-		learningRate: 0.1
+		iterations: 5000,
+		learningRate: 0.5,
+		momentum: 0.9,
+		trainingSystem: backpropSystem
 	});
 	// Initialize network.
-	if(!neurons) neurons = [1]; // Single layer.
+	if(!neurons) neurons = [2, 1]; // Single layer with 2 neurons and 1 output neuron.
 	this.initialize(neurons);
 };
 
@@ -21,8 +26,9 @@ _.extend(network.prototype, {
 			if(!Array.isArray(neurons)) neurons = [neurons];
 			// Create layers array.
 			this._layers = new Array(neurons.length);
-			// Initialize layers. For each layer, ...
+			// For each layer, ...
 			for(var i = 0, len = neurons.length; i < len; i++) {
+				// Initialize
 				this._layers[i] = new layer();
 				// Populate with n new neurons.
 				for(j = 0; j < neurons[i]; j++) {
@@ -36,95 +42,116 @@ _.extend(network.prototype, {
 
 	input: function(input) {
 		try {
-			// Parse input.
+			// Force array type.
 			if(!Array.isArray(input)) input = [input];
-			var i, j, result = input;
-			// Pass input to layer(s).
-			// Until maximum iterations or error threshold is reached.
-			for(i = 0; i < this.options.iterations; i++) {
-				// For each layer, ...
-				for(j = 0; j < this._layers.length; j++) {
-					result = this._layers[j].input(result);
-				}
-
+			// Clone input so as not to mess with original array.
+			var result = input.slice();
+			// Pass input into first layer.
+			// And then the result of that layer into each subsequent layer.
+			for(var i = 0, len = this._layers.length; i < len; i++) {
+				result = this._layers[i].parse(result);
 			}
 
-			var sum = result.reduce(function(a, b) {
-				return a + b;
-			});
-
+			// console.log(result);
 			return result;
 
 		} catch(e) {
-			console.log("ERROR:", e.stack);
+			console.log("Error:", e.stack);
 		}
 	},
 
-	train: function(output, target) {
+	train: function(inputs, ideals) {
+		var err = 1, index;
+		// Cycle through inputs and ideal values to train network
+		// and avoid problem of "catastrophic forgetting"
+		for(var i = 0; err > 0.0001; i++) {
+			index = i % inputs.length;
+			err = this._iteration(inputs[index], ideals[index]);
+		} // End of an epoch.
+	},
 
+	_iteration: function(input, ideal) {
+		try {
+			var i, j, k, previous, error, sigErr;
+			var neuron, output;
 
-		var i, j, k, error, dx;
-		var layer, previous;
+			// Run the network to populate output values.
+			this.input(input);
 
-		for(var iterations = 0; iterations < this.options.iterations; iterations++) {
+			// Begin backpropagation.
 
-			// Working backwards, for each layer, calculate delta values.
-			// output -> layer n -> ... -> layer 2 -> layer 1 -> layer 0
+			sigErr = 0.0;
+
+			// Starting from the last layer and working backward, calculate gradients.
 			for(i = this._layers.length-1; i >= 0; i--) {
-				// Set this layer to the layer variable for easier referencing.
-				layer = this._layers[i];
-
-				if(!this._layers[i+1]) { // This is the last layer.
-					// Do stuff using output instead of next layer's neurons.
-					// For each output, calculate the delta.
-					for(j = 0; j < output.length; j++) {
-						layer._neurons[j].momentum = layer._neurons[j].delta;
-						layer._neurons[j].delta = layer._neurons[j].output * (1 - layer._neurons[j].output) * (target[j] - layer._neurons[j].output);
-						// layer._neurons[j].delta = target[j] - layer._neurons[j].output;
+				// If there isn't a next layer, then this is the last layer.
+				// In which case, use the ideal values rather than the error
+				// of the previous layer.
+				if(!this._layers[i+1]) {
+					// Cycle through output neurons and calculate their gradients.
+					for(j = 0; j < this._layers[i]._neurons.length; j++) {
+						neuron = this._layers[i]._neurons[j];
+						output = neuron.output;
+						// Delta for output neurons is simply the derivative of the
+						// activation function multiplied by the difference between
+						// the ideal values and the actual output values.
+						neuron.gradient = output * (1 - output) * (ideal[j] - output);
+						// Calculate total error.
+						sigErr += Math.pow((ideal[j] - output), 2);
 					}
 				}
-				// Otherwise, the next layer exists, and we will use
-				// its neurons to backpropagate this layer.
+				// Else, the layer is not the last layer, and its error will
+				// require more work to calculate.
 				else {
-					previous = this._layers[i+1]._neurons;
-
-					// For each neuron in this layer, there will be
-					// a corresponding weight in the next layer's neurons.
-					for(j = 0; j < layer._neurons.length; j++) {
+					// Cycle through each neuron in the hidden layers, ...
+					for(j = 0; j < this._layers[i]._neurons.length; j++) {
+						neuron = this._layers[i]._neurons[j];
+						output = neuron.output;
+						// The index of this neuron is j.
+						// Therefore, the corresponding weights in each neuron
+						// will also be at index j.
 						error = 0.0;
-						// So go through the previous layer's neurons's weights
-						// and get those weights * that layer's delta value.
-						for(k = 0; k < previous.length; k++) {
-							// The weight corresponding to this neuron will be j.
-							error += previous[k].w[j] * previous[k].delta;
+						// So for every neuron in the following layer, get the 
+						// weight corresponding to this neuron.
+						for(k = 0; k < this._layers[i+1]._neurons.length; k++) {
+							// And multiply it by that neuron's gradient
+							// and add it to the error calculation.
+							error += this._layers[i+1]._neurons[k].weights[j] * this._layers[i+1]._neurons[k].gradient;
 						}
-						// That will give us this neuron's delta value.
-						layer._neurons[j].momentum = layer._neurons[j].delta;
-						layer._neurons[j].delta = layer._neurons[j].output * (1 - layer._neurons[j].output) * error;
-
-					}
-
-				} // End else statement.
-
-			}
-			// Now that every neuron has its delta values, we can multiply the 
-			// weights of each neuron by the delta in order to get the new values.
-			for(i = 0; i < this._layers.length; i++) {
-
-
-				// For each neuron, multiply every weight by the delta value.
-				for(j = 0; j < this._layers[i]._neurons.length; j++) {
-					// Calculate derivative value.
-					// dx = this._layers[i]._neurons[j].output * (1 - this._layers[i]._neurons[j].output);
-
-					for(k = 0; k < this._layers[i]._neurons[j].w.length; k++) {
-						this._layers[i]._neurons[j].w[k] += this.options.learningRate * this._layers[i]._neurons[j].delta * this._layers[i]._neurons[j].output;
+						// Once you have the error calculation, multiply it by
+						// the derivative of the activation function to get
+						// the gradient of this neuron.
+						neuron.gradient = output * (1 - output) * error;
 					}
 				}
 			}
+			// Once all gradients are calculated, work forward and calculate
+			// the new weights. w = w + (lr * df/de * in)
+			for(i = 0; i < this._layers.length; i++) {
+				// For each neuron in each layer, ...
+				for(j = 0; j < this._layers[i]._neurons.length; j++) {
+					neuron = this._layers[i]._neurons[j];
+					// Modify the bias.
+					neuron.bias += this.options.learningRate * neuron.gradient;
+					// For each weight, ...
+					for(k = 0; k < neuron.weights.length; k++) {
+						// Modify the weight by multiplying the weight by the
+						// learning rate and the input of the neuron preceding.
+						// If no preceding layer, then use the input layer.
+						neuron.deltas[k] = this.options.learningRate * neuron.gradient * (this._layers[i-1] ? this._layers[i-1]._neurons[k].output : input[k]);
+						neuron.weights[k] += neuron.deltas[k];
+						neuron.weights[k] += this.options.momentum * neuron.previousDeltas[k];
+					}
+					// Set previous delta values.
+					neuron.previousDeltas = neuron.deltas.slice();
+				}
+			}
 
+			return sigErr;
+
+		} catch(e) {
+			console.log("Error:", e);
 		}
-
 	}
 
 });
